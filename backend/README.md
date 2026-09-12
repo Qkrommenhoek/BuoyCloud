@@ -4,7 +4,6 @@ Spring Boot (Kotlin) backend for BuoyBuddy.
 
 ## Configuration
 
-This project uses Spring's native configuration mechanisms - no `.env` file or dotenv library is involved.
 
 - [`application.properties`](src/main/resources/application.properties) holds committed defaults and placeholders (`${DB_URL}`, `${DB_USERNAME}`, `${DB_PASSWORD}`, `${JWT_SECRET}`). These placeholders are resolved from the Spring `Environment`, which is populated by profile-specific property files locally and by real OS environment variables in deployment.
 - `application-local.properties` (gitignored) supplies literal values for local development under the `local` Spring profile. It is loaded automatically when the `local` profile is active, and its values take precedence over the placeholders in `application.properties`.
