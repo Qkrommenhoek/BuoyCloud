@@ -9,7 +9,7 @@ function Login({ onLogin }: { onLogin: (token: string) => void }){
     const navigate = useNavigate();
     async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>){
         e.preventDefault();
-        const res = await fetch('http://localhost:9000/login', {
+        const res = await fetch('api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password }),

@@ -6,7 +6,7 @@ function Register({ onRegister }: { onRegister: (token: string) => void }){
     const [password, setPassword] = useState('');
     async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>){
         e.preventDefault();
-        const res = await fetch('http://localhost:9000/register', {
+        const res = await fetch('/api/auth/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password }),

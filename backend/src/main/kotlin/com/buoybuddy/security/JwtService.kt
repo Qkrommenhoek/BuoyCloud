@@ -13,23 +13,17 @@ import java.util.Date
 class JwtService(
     @Value("\${jwt.secret}") private val secretKey: String,
 ) {
-    fun generateToken(username: String): String = createToken(emptyMap(), username)
-
-    private fun createToken(claims: Map<String, Any>, username: String): String =
+    fun generateToken(username: String): String =
         Jwts.builder()
-            .setClaims(claims)
             .setSubject(username)
             .setIssuedAt(Date(System.currentTimeMillis()))
             .setExpiration(Date(System.currentTimeMillis() + EXPIRATION_MS))
             .signWith(signKey())
             .compact()
 
-    fun extractUsername(token: String): String = extractClaim(token) { it.subject }
+    fun extractUsername(token: String): String = extractAllClaims(token).subject
 
-    fun extractExpiration(token: String): Date = extractClaim(token) { it.expiration }
-
-    private fun <T> extractClaim(token: String, resolver: (Claims) -> T): T =
-        resolver(extractAllClaims(token))
+    fun extractExpiration(token: String): Date = extractAllClaims(token).expiration
 
     private fun extractAllClaims(token: String): Claims =
         Jwts.parserBuilder()
@@ -38,12 +32,9 @@ class JwtService(
             .parseClaimsJws(token)
             .body
 
-    private fun isTokenExpired(token: String): Boolean =
-        extractExpiration(token).before(Date())
-
     fun validateToken(token: String, userDetails: UserDetails): Boolean {
         val username = extractUsername(token)
-        return username == userDetails.username && !isTokenExpired(token)
+        return username == userDetails.username && extractExpiration(token).after(Date())
     }
 
     private fun signKey() = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey))

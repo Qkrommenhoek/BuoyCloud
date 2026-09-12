@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 type NdbcRealtimeData = {
   columns: string[];
@@ -11,7 +12,7 @@ function App({
   onAuthError,
   onLogout,
 }: {
-  token: string;
+  token: string | null;
   onAuthError: () => void;
   onLogout: () => void;
 }) {
@@ -19,9 +20,9 @@ function App({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('http://localhost:9000/api/ndbc/46239/parsed', {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    fetch('http://localhost:9000/api/ndbc/46239/parsed'
+      // , {headers: { Authorization: `Bearer ${token}` },}
+    )
       .then((res) => {
         if (res.status === 401 || res.status === 403) {
           onAuthError();
@@ -33,6 +34,16 @@ function App({
       .then(setData)
       .catch((err) => setError(err.message));
   }, [token, onAuthError]);
+  const navigate = useNavigate();
+  const loginButton = (
+    <button
+      type="button"
+      onClick={() => navigate('/login')}
+      style={{ position: 'absolute', top: '1rem', right: '1rem' }}
+    >
+      Login
+    </button>
+  );
 
   const logoutButton = (
     <button
@@ -62,7 +73,7 @@ function App({
   }
   return (
     <div style={{ position: 'relative', padding: '2rem', fontFamily: 'sans-serif' }}>
-      {logoutButton}
+      {token?logoutButton:loginButton}
       <div style={{ display: 'flex', gap: '1.5rem', overflowX: 'auto' }}>
         {data.columns.map((col, i) => (
           <div key={col}>

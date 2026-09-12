@@ -1,5 +1,6 @@
 package com.buoybuddy.security
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.authentication.AuthenticationManager
@@ -20,17 +21,29 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 
 @Configuration
 @EnableWebSecurity
-class SecurityConfig(private val jwtAuthFilter: JwtAuthFilter) {
+class SecurityConfig(
+    private val jwtAuthFilter: JwtAuthFilter,
+    @param:Value("\${app.cors.allowed-origins:}") private val allowedOriginsProperty: String,
+) {
+
+    private val allowedOrigins: List<String> =
+        allowedOriginsProperty.split(",").map { it.trim() }.filter { it.isNotEmpty() }
 
     @Bean
     fun filterChain(http: HttpSecurity, authenticationProvider: AuthenticationProvider): SecurityFilterChain {
+        if (allowedOrigins.isNotEmpty()) {
+            http.cors { it.configurationSource(corsConfigurationSource()) }
+        }
         http
-            .cors { it.configurationSource(corsConfigurationSource()) }
             .csrf { it.disable() }
             .authorizeHttpRequests { authorize ->
                 authorize
-                    .requestMatchers("/register", "/login").permitAll()
-                    .anyRequest().authenticated()
+                    // Auth endpoints must be reachable before a client has a token.
+                    .requestMatchers("/api/auth/**").permitAll()
+                    // Everything else under /api is real data and requires a valid JWT.
+                    // .requestMatchers("/api/**").authenticated()
+                    // The React SPA shell (index.html, JS/CSS bundles) is public; it contains no user data.
+                    .anyRequest().permitAll()
             }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authenticationProvider(authenticationProvider)
@@ -56,10 +69,14 @@ class SecurityConfig(private val jwtAuthFilter: JwtAuthFilter) {
     fun authenticationManager(config: AuthenticationConfiguration): AuthenticationManager =
         config.authenticationManager
 
-    @Bean
-    fun corsConfigurationSource(): CorsConfigurationSource {
+    /**
+     * Only used when `app.cors.allowed-origins` is set (e.g. local dev, where the Vite
+     * dev server on :5173 is a different origin than the backend on :9000). In production
+     * the SPA is served same-origin from Spring, so CORS is not registered at all.
+     */
+    private fun corsConfigurationSource(): CorsConfigurationSource {
         val config = CorsConfiguration().apply {
-            allowedOrigins = listOf("http://localhost:5173")
+            allowedOrigins = this@SecurityConfig.allowedOrigins
             allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
             allowedHeaders = listOf("*")
             allowCredentials = true

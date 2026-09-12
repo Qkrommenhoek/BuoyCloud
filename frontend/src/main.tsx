@@ -24,18 +24,12 @@ function Root() {
   return(
     <BrowserRouter>
       <Routes>
+      <Route
+        path="/"
+        element={<App token = {token} onAuthError={handleAuthError} onLogout={handleLogout} />}/>
       <Route path="/login" element={token ? <Navigate to="/" /> : <Login onLogin={setToken} />} />
       <Route path="/register" element={token ? <Navigate to="/" /> : <Register onRegister={setToken} />} />
-        <Route
-          path="/*"
-          element={
-            token ? (
-              <App token={token} onAuthError={handleAuthError} onLogout={handleLogout} />
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
-        />
+        
       </Routes>
     </BrowserRouter>
   );
