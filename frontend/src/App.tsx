@@ -18,10 +18,18 @@ function App({
 }) {
   const [data, setData] = useState<NdbcRealtimeData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selectedStation, setSelectedStation] = useState<string | null>(null);
+  const STATIONS = [
+    '46211', '46213', '46214', '46215', '46218', '46219', '46221', '46222',
+    '46224', '46225', '46229', '46232', '46236', '46239', '46243', '46244',
+    '46248', '46251', '46253', '46254', '46256', '46258', '46267', '46268',
+    '46274', '46275', '46277', '46278', '46285',
+  ]
 
+  if(selectedStation==null)setSelectedStation('46239');
   useEffect(() => {
-    fetch('http://localhost:9000/api/ndbc/46239/parsed'
-      // , {headers: { Authorization: `Bearer ${token}` },}
+    fetch(`/api/ndbc/${selectedStation}/parsed`
+      , {headers: token ? { Authorization: `Bearer ${token}` } : {},}
     )
       .then((res) => {
         if (res.status === 401 || res.status === 403) {
@@ -43,6 +51,13 @@ function App({
     >
       Login
     </button>
+  );
+  const selectBox = (
+    <select onChange={(e) => setSelectedStation(e.target.value)}>
+      {STATIONS.map((station) =>
+        <option value = {station} >{station}</option>
+      )}
+    </select>
   );
 
   const logoutButton = (
@@ -74,6 +89,7 @@ function App({
   return (
     <div style={{ position: 'relative', padding: '2rem', fontFamily: 'sans-serif' }}>
       {token?logoutButton:loginButton}
+      {selectBox}
       <div style={{ display: 'flex', gap: '1.5rem', overflowX: 'auto' }}>
         {data.columns.map((col, i) => (
           <div key={col}>

@@ -40,6 +40,9 @@ function Register({ onRegister }: { onRegister: (token: string) => void }){
                 />
                 <button type="submit">Login</button>
             </form>
+            <div style={{ marginTop: '1rem' }}>
+                <a href="/oauth2/authorization/google">Sign up with Google</a>
+            </div>
         </div>
     );
 }
