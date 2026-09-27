@@ -48,6 +48,7 @@ class SecurityConfig(
                 authorize("/api/auth/**", permitAll)
                 // Buoy data is public even for logged-out visitors on the home page.
                 authorize("/api/ndbc/**", permitAll)
+                authorize("/api/gfs/**", permitAll)
                 // Everything else under /api is real data and requires a valid JWT.
                 authorize("/api/**", authenticated)
                 // The React SPA shell (index.html, JS/CSS bundles) is public; it contains no user data.

@@ -15,3 +15,6 @@ Thumbs.db
 
 # Personal notes (optional -- remove if you want these tracked)
 notes/
+
+#AWS
+ec2/
