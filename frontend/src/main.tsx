@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { useState } from 'react'
 import './index.css'
+import 'leaflet/dist/leaflet.css'
 import App from './App.tsx'
 import Login from './Login.tsx'
 import Register from './Register.tsx'
