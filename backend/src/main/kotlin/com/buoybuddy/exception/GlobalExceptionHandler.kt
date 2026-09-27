@@ -20,4 +20,14 @@ class GlobalExceptionHandler {
     fun handleUnauthorized(exception: UsernameNotFoundException): ResponseEntity<ErrorResponse> =
         ResponseEntity.status(HttpStatus.UNAUTHORIZED)
             .body(ErrorResponse(exception.message ?: "Invalid credentials"))
+
+    @ExceptionHandler(GfsForecastNotFoundException::class)
+    fun handleGfsNotFound(exception: GfsForecastNotFoundException): ResponseEntity<ErrorResponse> =
+        ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(ErrorResponse(exception.message ?: "GFS forecast not found"))
+
+    @ExceptionHandler(GfsForecastParseException::class)
+    fun handleGfsParseFailure(exception: GfsForecastParseException): ResponseEntity<ErrorResponse> =
+        ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+            .body(ErrorResponse(exception.message ?: "Failed to parse GFS forecast"))
 }

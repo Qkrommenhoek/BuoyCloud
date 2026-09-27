@@ -1,54 +1,30 @@
 package com.buoybuddy.security
 
-import io.jsonwebtoken.Claims
-import io.jsonwebtoken.Jwts
-import io.jsonwebtoken.io.Decoders
-import io.jsonwebtoken.security.Keys
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.security.core.userdetails.UserDetails
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm
+import org.springframework.security.oauth2.jwt.JwsHeader
+import org.springframework.security.oauth2.jwt.JwtClaimsSet
+import org.springframework.security.oauth2.jwt.JwtEncoder
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters
 import org.springframework.stereotype.Component
-import java.util.Date
+import java.time.Duration
+import java.time.Instant
 
 @Component
 class JwtService(
-    @Value("\${jwt.secret}") private val secretKey: String,
+    private val jwtEncoder: JwtEncoder,
 ) {
-    fun generateToken(username: String): String = createToken(emptyMap(), username)
-
-    private fun createToken(claims: Map<String, Any>, username: String): String =
-        Jwts.builder()
-            .setClaims(claims)
-            .setSubject(username)
-            .setIssuedAt(Date(System.currentTimeMillis()))
-            .setExpiration(Date(System.currentTimeMillis() + EXPIRATION_MS))
-            .signWith(signKey())
-            .compact()
-
-    fun extractUsername(token: String): String = extractClaim(token) { it.subject }
-
-    fun extractExpiration(token: String): Date = extractClaim(token) { it.expiration }
-
-    private fun <T> extractClaim(token: String, resolver: (Claims) -> T): T =
-        resolver(extractAllClaims(token))
-
-    private fun extractAllClaims(token: String): Claims =
-        Jwts.parserBuilder()
-            .setSigningKey(signKey())
+    fun generateToken(username: String): String {
+        val now = Instant.now()
+        val claims = JwtClaimsSet.builder()
+            .subject(username)
+            .issuedAt(now)
+            .expiresAt(now.plus(EXPIRATION))
             .build()
-            .parseClaimsJws(token)
-            .body
-
-    private fun isTokenExpired(token: String): Boolean =
-        extractExpiration(token).before(Date())
-
-    fun validateToken(token: String, userDetails: UserDetails): Boolean {
-        val username = extractUsername(token)
-        return username == userDetails.username && !isTokenExpired(token)
+        val header = JwsHeader.with(MacAlgorithm.HS256).build()
+        return jwtEncoder.encode(JwtEncoderParameters.from(header, claims)).tokenValue
     }
 
-    private fun signKey() = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey))
-
     private companion object {
-        private const val EXPIRATION_MS = 1000L * 60 * 60 * 24
+        private val EXPIRATION = Duration.ofHours(24)
     }
 }

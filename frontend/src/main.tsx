@@ -1,9 +1,11 @@
 import { StrictMode } from 'react'
 import { useState } from 'react'
 import './index.css'
+import 'leaflet/dist/leaflet.css'
 import App from './App.tsx'
 import Login from './Login.tsx'
 import Register from './Register.tsx'
+import OAuthRedirect from './OAuthRedirect.tsx'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { clearStoredToken, getValidStoredToken } from './auth'
@@ -24,18 +26,13 @@ function Root() {
   return(
     <BrowserRouter>
       <Routes>
+      <Route
+        path="/"
+        element={<App token = {token} onAuthError={handleAuthError} onLogout={handleLogout} />}/>
       <Route path="/login" element={token ? <Navigate to="/" /> : <Login onLogin={setToken} />} />
       <Route path="/register" element={token ? <Navigate to="/" /> : <Register onRegister={setToken} />} />
-        <Route
-          path="/*"
-          element={
-            token ? (
-              <App token={token} onAuthError={handleAuthError} onLogout={handleLogout} />
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
-        />
+      <Route path="/oauth2/redirect" element={<OAuthRedirect onLogin={setToken} />} />
+        
       </Routes>
     </BrowserRouter>
   );

@@ -36,7 +36,21 @@ out/
 ### VS Code ###
 .vscode/
 
+### Kotlin ###
+.kotlin/
+
 # Environment secrets
 .env
 .env.*
-!.env.example
+.env.example
+
+# Local dev overrides (see application-local.properties.example)
+src/main/resources/application-local.properties
+
+# Generated frontend build output copied in before packaging the JAR
+src/main/resources/static/
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

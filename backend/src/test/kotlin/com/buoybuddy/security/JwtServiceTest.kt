@@ -1,35 +1,34 @@
 package com.buoybuddy.security
 
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.springframework.security.core.userdetails.User as SpringUser
+import org.junit.jupiter.api.assertThrows
+import org.springframework.security.oauth2.jwt.JwtException
 
 class JwtServiceTest {
 
-    private val jwtService = JwtService("5367566859703373367639792F423F452848284D6251655468576D5A71347437")
+    private val securityConfig = SecurityConfig(
+        jwtSecret = "5367566859703373367639792F423F452848284D6251655468576D5A71347437",
+        oauth2RedirectUri = "/oauth2/redirect",
+    )
+    private val jwtService = JwtService(securityConfig.jwtEncoder())
+    private val jwtDecoder = securityConfig.jwtDecoder()
 
     @Test
-    fun `generated token round-trips to the same username`() {
+    fun `generated token decodes to the same username`() {
         val token = jwtService.generateToken("quinn")
 
-        assertEquals("quinn", jwtService.extractUsername(token))
+        assertEquals("quinn", jwtDecoder.decode(token).subject)
     }
 
     @Test
-    fun `validateToken succeeds for the matching, unexpired user`() {
-        val token = jwtService.generateToken("quinn")
-        val userDetails = SpringUser("quinn", "irrelevant", emptyList())
+    fun `token signed with a different secret is rejected`() {
+        val otherConfig = SecurityConfig(
+            jwtSecret = "4A404E635266556A586E3272357538782F413F4428472B4B6250645367566B59",
+            oauth2RedirectUri = "/oauth2/redirect",
+        )
+        val foreignToken = JwtService(otherConfig.jwtEncoder()).generateToken("quinn")
 
-        assertTrue(jwtService.validateToken(token, userDetails))
-    }
-
-    @Test
-    fun `validateToken fails when the username does not match the token subject`() {
-        val token = jwtService.generateToken("quinn")
-        val otherUser = SpringUser("someone-else", "irrelevant", emptyList())
-
-        assertFalse(jwtService.validateToken(token, otherUser))
+        assertThrows<JwtException> { jwtDecoder.decode(foreignToken) }
     }
 }

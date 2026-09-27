@@ -6,7 +6,7 @@ function Register({ onRegister }: { onRegister: (token: string) => void }){
     const [password, setPassword] = useState('');
     async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>){
         e.preventDefault();
-        const res = await fetch('http://localhost:9000/register', {
+        const res = await fetch('/api/auth/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password }),
@@ -40,6 +40,9 @@ function Register({ onRegister }: { onRegister: (token: string) => void }){
                 />
                 <button type="submit">Login</button>
             </form>
+            <div style={{ marginTop: '1rem' }}>
+                <a href="/oauth2/authorization/google">Sign up with Google</a>
+            </div>
         </div>
     );
 }

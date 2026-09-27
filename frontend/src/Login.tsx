@@ -9,7 +9,7 @@ function Login({ onLogin }: { onLogin: (token: string) => void }){
     const navigate = useNavigate();
     async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>){
         e.preventDefault();
-        const res = await fetch('http://localhost:9000/login', {
+        const res = await fetch('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password }),
@@ -46,6 +46,9 @@ function Login({ onLogin }: { onLogin: (token: string) => void }){
             <button type="button" onClick={() => navigate('/register')}>
                 Need an account? Register
             </button>
+            <div style={{ marginTop: '1rem' }}>
+                <a href="/oauth2/authorization/google">Sign in with Google</a>
+            </div>
         </div>
     );
 }

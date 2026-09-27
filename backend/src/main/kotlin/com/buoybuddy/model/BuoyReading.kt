@@ -2,11 +2,21 @@ package com.buoybuddy.model
 
 import jakarta.persistence.EmbeddedId
 import jakarta.persistence.Entity
+import jakarta.persistence.FetchType
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.ManyToOne
+import jakarta.persistence.MapsId
 
 @Entity
 class BuoyReading(
     @EmbeddedId
     val id: BuoyReadingId,
+    
+    @MapsId("userId")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    val user: User,
+
     val wvht: Double,
     val dpd: Double,
     val apd: Double,

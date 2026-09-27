@@ -1,81 +1,61 @@
 import { useEffect, useState } from 'react';
+import { ForecastDetail } from './components/ForecastDetail';
+import { ForecastHeader } from './components/ForecastHeader';
+import { StationMap } from './components/StationMap';
+import { SwellCompass } from './components/SwellCompass';
+import { SwellHeightChart } from './components/SwellHeightChart';
+import { useGfsForecast } from './hooks/useGfsForecast';
+import './forecast.css';
 
-type NdbcRealtimeData = {
-  columns: string[];
-  units: string[];
-  data: Record<string, (string | null)[]>;
-};
+const DEFAULT_STATION = '46239';
 
 function App({
   token,
   onAuthError,
   onLogout,
 }: {
-  token: string;
+  token: string | null;
   onAuthError: () => void;
   onLogout: () => void;
 }) {
-  const [data, setData] = useState<NdbcRealtimeData | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [selectedStation, setSelectedStation] = useState(DEFAULT_STATION);
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const { data, error } = useGfsForecast(token, selectedStation, onAuthError);
 
   useEffect(() => {
-    fetch('http://localhost:9000/api/ndbc/46239/parsed', {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => {
-        if (res.status === 401 || res.status === 403) {
-          onAuthError();
-          throw new Error('Session expired. Please log in again.');
-        }
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json() as Promise<NdbcRealtimeData>;
-      })
-      .then(setData)
-      .catch((err) => setError(err.message));
-  }, [token, onAuthError]);
+    setSelectedTime(data?.rows[0]?.time ?? null);
+  }, [data]);
 
-  const logoutButton = (
-    <button
-      type="button"
-      onClick={onLogout}
-      style={{ position: 'absolute', top: '1rem', right: '1rem' }}
-    >
-      Logout
-    </button>
-  );
-
-  if (error) {
-    return (
-      <div style={{ position: 'relative', padding: '2rem' }}>
-        {logoutButton}
-        <div>Error: {error}</div>
-      </div>
-    );
-  }
-  if (!data) {
-    return (
-      <div style={{ position: 'relative', padding: '2rem' }}>
-        {logoutButton}
-        <div>Loading...</div>
-      </div>
-    );
-  }
   return (
-    <div style={{ position: 'relative', padding: '2rem', fontFamily: 'sans-serif' }}>
-      {logoutButton}
-      <div style={{ display: 'flex', gap: '1.5rem', overflowX: 'auto' }}>
-        {data.columns.map((col, i) => (
-          <div key={col}>
-            <strong>{col}</strong>
-            <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>{data.units[i]}</div>
-            <ul style={{ listStyle: 'none', padding: 0, margin: '0.5rem 0 0' }}>
-              {data.data[col].map((value, row) => (
-                <li key={row}>{value ?? '—'}</li>
-              ))}
-            </ul>
+    <div className="forecast-page">
+      <ForecastHeader
+        token={token}
+        data={data}
+        selectedStation={selectedStation}
+        onSelectStation={setSelectedStation}
+        onLogout={onLogout}
+      />
+
+      {error && <div>Error: {error}</div>}
+      {!error && !data && <div>Loading...</div>}
+
+      {data && (
+        <div className="forecast-body">
+          <div className="forecast-card forecast-map-card">
+            <StationMap selectedStation={selectedStation} onSelectStation={setSelectedStation} />
           </div>
-        ))}
-      </div>
+
+          <div className="forecast-card forecast-charts-card">
+            <SwellHeightChart rows={data.rows} selectedTime={selectedTime} onSelectTime={setSelectedTime} />
+            <div className="forecast-charts-row">
+              <div className="forecast-compass-wrap">
+                <SwellCompass rows={data.rows} selectedTime={selectedTime} />
+              </div>
+              <ForecastDetail rows={data.rows} selectedTime={selectedTime} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

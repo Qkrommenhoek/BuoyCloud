@@ -1,0 +1,9 @@
+spring.datasource.url=jdbc:postgresql://localhost:5433/buoybuddy
+spring.datasource.username=buoybuddy
+spring.datasource.password=buoybuddy
+
+jwt.secret=your_jwt_secret_here
+
+server.port=9000
+logging.level.org.springframework.web=DEBUG
+app.cors.allowed-origins=http://localhost:5173
