@@ -1,21 +1,15 @@
-import { useNavigate } from 'react-router-dom';
 import { STATIONS } from '../stations';
 import type { GfsWaveForecast } from '../types';
 
 export function ForecastHeader({
-  token,
   data,
   selectedStation,
-  onSelectStation,
-  onLogout,
+  onSelectStation
 }: {
-  token: string | null;
   data: GfsWaveForecast | null;
   selectedStation: string;
   onSelectStation: (stationId: string) => void;
-  onLogout: () => void;
 }) {
-  const navigate = useNavigate();
 
   return (
     <div className="forecast-header">
@@ -31,18 +25,6 @@ export function ForecastHeader({
             </option>
           ))}
         </select>
-        {token ? (
-          <button
-            type="button"
-            onClick={() => { onLogout(); navigate('/login'); }}
-          >
-            Logout
-          </button>
-        ) : (
-          <button type="button" onClick={() => navigate('/login')}>
-            Login
-          </button>
-        )}
       </div>
       {data && (
         <div className="forecast-summary">
