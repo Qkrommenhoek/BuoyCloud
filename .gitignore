@@ -18,3 +18,35 @@ notes/
 
 #AWS
 ec2/
+
+# AWS SAM build artifacts
+.aws-sam/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Defensive / other IaC tooling
+cdk.out/
+.serverless/
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+
+# Generic secret-shaped files, defense in depth
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+*.ppk
+credentials
+.aws/

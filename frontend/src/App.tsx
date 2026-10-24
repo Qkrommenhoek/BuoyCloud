@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { ForecastDetail } from './components/ForecastDetail';
 import { ForecastHeader } from './components/ForecastHeader';
 import { StationMap } from './components/StationMap';
@@ -9,31 +9,20 @@ import './forecast.css';
 
 const DEFAULT_STATION = '46239';
 
-function App({
-  token,
-  onAuthError,
-  onLogout,
-}: {
-  token: string | null;
-  onAuthError: () => void;
-  onLogout: () => void;
-}) {
+function App() {
   const [selectedStation, setSelectedStation] = useState(DEFAULT_STATION);
-  const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  const { data, error } = useGfsForecast(token, selectedStation, onAuthError);
-
-  useEffect(() => {
-    setSelectedTime(data?.rows[0]?.time ?? null);
-  }, [data]);
+  const [pickedTime, setSelectedTime] = useState<string | null>(null);
+  const { data, error } = useGfsForecast(selectedStation);
+  // Fall back to the first row when the pick isn't in the current data (new station, or a poll dropped it).
+  const selectedTime =
+    pickedTime && data?.rows.some((r) => r.time === pickedTime) ? pickedTime : data?.rows[0]?.time ?? null;
 
   return (
     <div className="forecast-page">
       <ForecastHeader
-        token={token}
         data={data}
         selectedStation={selectedStation}
         onSelectStation={setSelectedStation}
-        onLogout={onLogout}
       />
 
       {error && <div>Error: {error}</div>}
